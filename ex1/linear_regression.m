@@ -12,6 +12,10 @@ function [f,g] = linear_regression(theta, X,y)
 
   f=0;
   g=zeros(size(theta));
+  
+  h_theta_x = theta'*X;
+  f= (1/2).*sum(( h_theta_x - y).^2);
+  g= X* (h_theta_x -y)';
 
   %
   % TODO:  Compute the linear regression objective by looping over the examples in X.
