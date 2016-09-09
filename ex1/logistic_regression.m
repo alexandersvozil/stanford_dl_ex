@@ -12,6 +12,9 @@ function [f,g] = logistic_regression(theta, X,y)
   % initialize objective value and gradient.
   f = 0;
   g = zeros(size(theta));
+  h_t_x = 1./(1+exp((-1) * (theta'*X)));
+  f = (-1)* sum(y*log(h_t_x)' + (1-y) * log(1-h_t_x)');
+  g = X * (h_t_x - y)';
 
 
   %
