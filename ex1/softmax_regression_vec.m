@@ -28,7 +28,9 @@ function [f,g] = softmax_regression(theta, X,y)
   y_indic = eye(num_classes)(:,y);
   f  = (-1)* sum(sum(y_indic .* probnum_classesX ));
 
-  g= - X*(y_indic - probnum_classesX)(1:9,:)';
+  g= - X*(y_indic - probnum_classesX)';
+
+  g = g(:,1:end-1);
 
 
   %f = sum(sum( y_indic'  * log(probnum_classesX)))
