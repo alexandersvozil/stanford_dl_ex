@@ -17,6 +17,21 @@ hAct = cell(numHidden+1, 1);
 gradStack = cell(numHidden+1, 1);
 %% forward prop
 %%% YOUR CODE HERE %%%
+fieldz = 'z_l';
+valuez = [];
+fielda = 'a_l';
+valuea = [data];
+
+%s - struct where all the intermediate results are saved
+s = struct(fieldz,valuez, fielda, valuea);
+
+for d = 1:numel(stack)
+    curW = stack{d}.W; 
+	curb = stack{d}.b;
+	s(d+1).z_l= bsxfun(@plus, curW * s(d).a_l, curb);
+	s(d+1).a_l=sigmoid(s(d+1).z_l);
+end
+
 
 %% return here if only predictions desired.
 if po
@@ -26,6 +41,9 @@ if po
 end;
 
 %% compute cost
+a_L = s(numel(stack)+1).a_l
+
+
 %%% YOUR CODE HERE %%%
 
 %% compute gradients using backpropagation
