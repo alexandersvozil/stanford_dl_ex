@@ -15,6 +15,7 @@ stack = params2stack(theta, ei);
 numHidden = numel(ei.layer_sizes) - 1;
 hAct = cell(numHidden+1, 1);
 gradStack = cell(numHidden+1, 1);
+m = size(data,2);
 %% forward prop
 %%% YOUR CODE HERE %%%
 %fieldz = 'z_l';
@@ -31,7 +32,8 @@ s{1}.a_l = data;
 for d = 1:numel(stack)
     curW = stack{d}.W; 
 	curb = stack{d}.b;
-	s{d+1}.z_l= bsxfun(@plus, curW * s{d}.a_l, curb);
+	zwobias = curW * s{d}.a_l;
+	s{d+1}.z_l= bsxfun(@plus, zwobias , curb);
 	s{d+1}.a_l=sigmoid(s{d+1}.z_l);
 end
 
@@ -46,16 +48,19 @@ if po
 end;
 
 %% compute cost
-sumA_L = sum(a_L);
-probK = bsxfun(@rdivide,a_L,sumA_L);
+
+probK = bsxfun(@rdivide,a_L,sum(a_L));
 probKlog = log(probK);
+%squash the labels into a format where we can subtract it from the output layer
 y_indic = eye(size(probKlog,1))(:,labels);
 cost = (-1) * sum(sum(y_indic.* probKlog));
+
 %%% YOUR CODE HERE %%%
 
 %% compute gradients using backpropagation
-delta_n_L= - (y_indic - a_L).* sigmoidDeriv(s{3}.z_l);
-delta_n_l2	= stack{2}.W' * delta_n_L .* sigmoidDeriv(s{2}.z_l);
+delta_n_L= - (y_indic - a_L);
+%delta_n_L= - (extY - a_L);
+delta_n_l2	= (stack{2}.W' * delta_n_L) .* sigmoidDeriv(s{2}.z_l);
 
 Delta_W1	= delta_n_l2*s{1}.a_l';
 Delta_W2	= delta_n_L*s{2}.a_l';
