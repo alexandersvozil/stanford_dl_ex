@@ -39,6 +39,7 @@ end
 
 
 a_L = s{numel(stack)+1}.a_l;
+z_L = s{numel(stack)+1}.z_l;
 %% return here if only predictions desired.
 if po
   cost = -1; ceCost = -1; wCost = -1; numCorrect = -1;
@@ -49,7 +50,10 @@ end;
 
 %% compute cost
 
-probK = bsxfun(@rdivide,a_L,sum(a_L));
+
+probK = bsxfun(@rdivide,exp(z_L),sum(exp(z_L)));
+a_L = probK;
+
 probKlog = log(probK);
 %squash the labels into a format where we can subtract it from the output layer
 y_indic = eye(size(probKlog,1))(:,labels);
@@ -59,7 +63,10 @@ cost = (-1) * sum(sum(y_indic.* probKlog));
 
 %% compute gradients using backpropagation
 delta_n_L= - (y_indic - a_L);
-%delta_n_L= - (extY - a_L);
+%gradStack = cell(numHidden+1, 1);
+%for l = 1:numHidden
+
+%end
 delta_n_l2	= (stack{2}.W' * delta_n_L) .* sigmoidDeriv(s{2}.z_l);
 
 Delta_W1	= delta_n_l2*s{1}.a_l';

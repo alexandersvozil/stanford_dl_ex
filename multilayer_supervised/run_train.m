@@ -27,7 +27,7 @@ ei.input_dim = 784;
 % number of output classes
 ei.output_dim = 10;
 % sizes of all hidden layers and the output layer
-ei.layer_sizes = [20, ei.output_dim];
+ei.layer_sizes = [56, ei.output_dim];
 % scaling parameter for l2 weight regularization penalty
 ei.lambda = 0;
 % which type of activation function to use in hidden layers
@@ -44,8 +44,7 @@ options.display = 'iter';
 options.maxFunEvals = 1e6;
 options.Method = 'lbfgs';
 options.useMex = 0;
-average_error = grad_check(@supervised_dnn_cost,params,20,ei,data_train_sm,labels_train_sm)
-return
+%average_error = grad_check(@supervised_dnn_cost,params,20,ei,data_train_sm,labels_train_sm)
 %% run training
 [opt_params,opt_value,exitflag,output] = minFunc(@supervised_dnn_cost,...
     params,options,ei, data_train_sm, labels_train_sm);
