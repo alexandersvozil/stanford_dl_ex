@@ -12,7 +12,7 @@ function average_error = grad_check(fun, theta0, num_checks, varargin)
     T0=T; T0(j) = T0(j)-delta;
     T1=T; T1(j) = T1(j)+delta;
 
-    [f,g] = fun(T, varargin{:});
+    [f,g,pred] = fun(T, varargin{:});
     f0 = fun(T0, varargin{:});
     f1 = fun(T1, varargin{:});
 

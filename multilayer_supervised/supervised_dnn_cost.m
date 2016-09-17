@@ -17,37 +17,56 @@ hAct = cell(numHidden+1, 1);
 gradStack = cell(numHidden+1, 1);
 %% forward prop
 %%% YOUR CODE HERE %%%
-fieldz = 'z_l';
-valuez = [];
-fielda = 'a_l';
-valuea = [data];
+%fieldz = 'z_l';
+%valuez = [];
+%fielda = 'a_l';
+%valuea = [data];
 
 %s - struct where all the intermediate results are saved
-s = struct(fieldz,valuez, fielda, valuea);
+%s = struct(fieldz,valuez, fielda, valuea);
+
+s = cell(numHidden+1, 1);
+s{1}.a_l = data;
 
 for d = 1:numel(stack)
     curW = stack{d}.W; 
 	curb = stack{d}.b;
-	s(d+1).z_l= bsxfun(@plus, curW * s(d).a_l, curb);
-	s(d+1).a_l=sigmoid(s(d+1).z_l);
+	s{d+1}.z_l= bsxfun(@plus, curW * s{d}.a_l, curb);
+	s{d+1}.a_l=sigmoid(s{d+1}.z_l);
 end
 
 
+a_L = s{numel(stack)+1}.a_l;
 %% return here if only predictions desired.
 if po
   cost = -1; ceCost = -1; wCost = -1; numCorrect = -1;
   grad = [];  
+  pred_prob = a_L;
   return;
 end;
 
 %% compute cost
-a_L = s(numel(stack)+1).a_l
-
-
+sumA_L = sum(a_L);
+probK = bsxfun(@rdivide,a_L,sumA_L);
+probKlog = log(probK);
+y_indic = eye(size(probKlog,1))(:,labels);
+cost = (-1) * sum(sum(y_indic.* probKlog));
 %%% YOUR CODE HERE %%%
 
 %% compute gradients using backpropagation
-%%% YOUR CODE HERE %%%
+delta_n_L= - (y_indic - a_L).* sigmoidDeriv(s{3}.z_l);
+delta_n_l2	= stack{2}.W' * delta_n_L .* sigmoidDeriv(s{2}.z_l);
+
+Delta_W1	= delta_n_l2*s{1}.a_l';
+Delta_W2	= delta_n_L*s{2}.a_l';
+Delta_b_1	= sum(delta_n_l2,2);
+Delta_b_2	= sum(delta_n_L,2);
+
+gradStack{1}.W = Delta_W1;
+gradStack{1}.b = Delta_b_1;
+gradStack{2}.W = Delta_W2;
+gradStack{2}.b = Delta_b_2;
+
 
 %% compute weight penalty cost and gradient for non-bias terms
 %%% YOUR CODE HERE %%%
