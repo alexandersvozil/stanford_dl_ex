@@ -27,12 +27,14 @@ ei.input_dim = 784;
 % number of output classes
 ei.output_dim = 10;
 % sizes of all hidden layers and the output layer
-ei.layer_sizes = [26 ei.output_dim];
+ei.layer_sizes = [50 ei.output_dim];
 % scaling parameter for l2 weight regularization penalty
 ei.lambda = 0.3;
 % which type of activation function to use in hidden layers
 % feel free to implement support for only the logistic sigmoid function
+%ei.activation_fun = 'ReLU';
 ei.activation_fun = 'logistic';
+
 
 %% setup random initial weights
 stack = initialize_weights(ei);

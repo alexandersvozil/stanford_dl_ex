@@ -15,16 +15,8 @@ stack = params2stack(theta, ei);
 numHidden = numel(ei.layer_sizes) - 1;
 hAct = cell(numHidden+1, 1);
 gradStack = cell(numHidden+1, 1);
-m = size(data,2);
 %% forward prop
 %%% YOUR CODE HERE %%%
-%fieldz = 'z_l';
-%valuez = [];
-%fielda = 'a_l';
-%valuea = [data];
-
-%s - struct where all the intermediate results are saved
-%s = struct(fieldz,valuez, fielda, valuea);
 
 s = cell(numHidden+1, 1);
 s{1}.a_l = data;
@@ -34,19 +26,22 @@ for d = 1:numel(stack)
 	curb = stack{d}.b;
 	zwobias = curW * s{d}.a_l;
 	s{d+1}.z_l= bsxfun(@plus, zwobias , curb);
-	s{d+1}.a_l=sigmoid(s{d+1}.z_l);
+
+	if(strcmp(ei.activation_fun,'logistic'))
+		s{d+1}.a_l=sigmoid(s{d+1}.z_l);
+	end
+%	if(strcmp(ei.activation_fun,'ReLU'))
+%		s{d+1}.a_l= max(s{d+1}.z_L,0);
+%	end
+
 end
 
 
 z_L = s{numel(stack)+1}.z_l;
-%% compute cost
-
-
 probK = bsxfun(@rdivide,exp(z_L),sum(exp(z_L)));
 a_L = probK;
 s{numel(stack)+1}.a_l = a_L;
 
-%squash the labels into a format where we can subtract it from the output layer
 %% return here if only predictions desired.
 if po
 	cost = -1; ceCost = -1; wCost = -1; numCorrect = -1;
@@ -54,6 +49,9 @@ if po
 	pred_prob = a_L;
 	return;
 end;
+
+%% compute cost
+%squash the labels into a format where we can subtract it from the output layer
 y_indic = eye(size(probK,1))(:,labels);
 cost = (-1) * sum(sum(y_indic.*log(probK)));
 
@@ -69,29 +67,25 @@ gradStack{numHidden+1}.W = deltaStack{numHidden+1} *s{numHidden+1}.a_l';
 gradStack{numHidden+1}.b =sum(deltaStack{numHidden+1},2);
 
 for l = numHidden:-1:1
-	deltaStack{l} = (stack{l+1}.W' * deltaStack{l+1}) .* sigmoidDeriv(s{l+1}.z_l);
+	
+	if(strcmp(ei.activation_fun,'logistic'))
+		deltaStack{l} = (stack{l+1}.W' * deltaStack{l+1}) .* sigmoidDeriv(s{l+1}.z_l);
+	end
+
+%	if(strcmp(ei.activation_fun,'ReLU'))
+%		deltaStack{l} = (stack{l+1}.W' * deltaStack{l+1}) .*...
+%		(max(s{l+1}.z_l,0)./s{l+1}.z_l);
+%	end
 	gradStack{l}.W = deltaStack{l}*s{l}.a_l';
 	gradStack{l}.b = sum(deltaStack{l},2);
 end
-%Delta_W1	= delta_n_l2*s{1}.a_l';
-%Delta_W2	= delta_n_L*s{2}.a_l';
-%Delta_b_1	= sum(delta_n_l2,2);
-%Delta_b_2	= sum(delta_n_L,2);
-%delta_n_l2	= (stack{2}.W' * delta_n_L) .* sigmoidDeriv(s{2}.z_l);
-
-
-%gradStack{1}.W = Delta_W1;
-%gradStack{1}.b = Delta_b_1;
-
 
 %% compute weight penalty cost and gradient for non-bias terms
 %%% YOUR CODE HERE %%%
-W1 = gradStack{l}.W;
 for l=1:numHidden+1
 	gradStack{l}.W = gradStack{l}.W + ei.lambda * gradStack{l}.W;
 	cost	   =  cost + ei.lambda/2 * sum(sum(stack{l}.W.^2));
 end
-%isequal(W1,gradStack{l}.W)
 %% reshape gradients into vector
 [grad] = stack2params(gradStack);
 end
