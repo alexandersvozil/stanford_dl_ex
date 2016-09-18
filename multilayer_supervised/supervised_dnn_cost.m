@@ -38,8 +38,15 @@ for d = 1:numel(stack)
 end
 
 
-a_L = s{numel(stack)+1}.a_l;
 z_L = s{numel(stack)+1}.z_l;
+%% compute cost
+
+
+probK = bsxfun(@rdivide,exp(z_L),sum(exp(z_L)));
+a_L = probK;
+s{numel(stack)+1}.a_l = a_L;
+
+%squash the labels into a format where we can subtract it from the output layer
 %% return here if only predictions desired.
 if po
   cost = -1; ceCost = -1; wCost = -1; numCorrect = -1;
@@ -47,37 +54,34 @@ if po
   pred_prob = a_L;
   return;
 end;
+y_indic = eye(size(probK,1))(:,labels);
+cost = (-1) * sum(sum(y_indic.*log(probK)))/m;
 
-%% compute cost
-
-
-probK = bsxfun(@rdivide,exp(z_L),sum(exp(z_L)));
-a_L = probK;
-
-probKlog = log(probK);
-%squash the labels into a format where we can subtract it from the output layer
-y_indic = eye(size(probKlog,1))(:,labels);
-cost = (-1) * sum(sum(y_indic.* probKlog));
 
 %%% YOUR CODE HERE %%%
 
 %% compute gradients using backpropagation
+deltaStack = cell(numHidden+1, 1);
 delta_n_L= - (y_indic - a_L);
-%gradStack = cell(numHidden+1, 1);
-%for l = 1:numHidden
 
-%end
-delta_n_l2	= (stack{2}.W' * delta_n_L) .* sigmoidDeriv(s{2}.z_l);
+deltaStack{numHidden+1}= delta_n_L;
+gradStack{numHidden+1}.W = deltaStack{numHidden+1} *s{numHidden+1}.a_l'/m;
+gradStack{numHidden+1}.b =sum(deltaStack{numHidden+1},2)/m ;
 
-Delta_W1	= delta_n_l2*s{1}.a_l';
-Delta_W2	= delta_n_L*s{2}.a_l';
-Delta_b_1	= sum(delta_n_l2,2);
-Delta_b_2	= sum(delta_n_L,2);
+for l = numHidden:-1:1
+	deltaStack{l} = (stack{l+1}.W' * deltaStack{l+1}) .* sigmoidDeriv(s{l+1}.z_l);
+	gradStack{l}.W = deltaStack{l}*s{l}.a_l'/m;
+	gradStack{l}.b = sum(deltaStack{l},2)/m;
+end
+%Delta_W1	= delta_n_l2*s{1}.a_l';
+%Delta_W2	= delta_n_L*s{2}.a_l';
+%Delta_b_1	= sum(delta_n_l2,2);
+%Delta_b_2	= sum(delta_n_L,2);
+%delta_n_l2	= (stack{2}.W' * delta_n_L) .* sigmoidDeriv(s{2}.z_l);
 
-gradStack{1}.W = Delta_W1;
-gradStack{1}.b = Delta_b_1;
-gradStack{2}.W = Delta_W2;
-gradStack{2}.b = Delta_b_2;
+
+%gradStack{1}.W = Delta_W1;
+%gradStack{1}.b = Delta_b_1;
 
 
 %% compute weight penalty cost and gradient for non-bias terms
