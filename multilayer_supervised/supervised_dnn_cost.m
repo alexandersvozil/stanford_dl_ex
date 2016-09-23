@@ -53,7 +53,7 @@ end;
 %squash the labels into a format where we can subtract it from the output layer
 y_indic_tmp = eye(size(probK,1));
 y_indic = y_indic_tmp(:,labels);
-cost = - sum(sum(y_indic.*log(probK)))/m;
+cost = - sum(sum(y_indic.*log(probK)));
 
 
 %%% YOUR CODE HERE %%%
@@ -64,32 +64,30 @@ delta_n_L= (a_L - y_indic);
 
 
 deltaStack{numHidden+1}= delta_n_L;
-gradStack{numHidden+1}.W = deltaStack{numHidden+1} *s{numHidden+1}.a_l'/m;
-gradStack{numHidden+1}.b =sum(deltaStack{numHidden+1},2)/m;
+gradStack{numHidden+1}.W = deltaStack{numHidden+1} *s{numHidden+1}.a_l';
+gradStack{numHidden+1}.b =sum(deltaStack{numHidden+1},2);
 
 for l = numHidden:-1:1
 	
 	if(strcmp(ei.activation_fun,'logistic'))
 		deltaStack{l} = (stack{l+1}.W' * deltaStack{l+1}) .*...
-		sigmoidDeriv(s{l+1}.z_l);
+		s{l+1}.a_l.*(1-s{l+1}.a_l);
 	end
 
 	if(strcmp(ei.activation_fun,'ReLU'))
 		deltaStack{l} = (stack{l+1}.W' * deltaStack{l+1}) .*...
 		(max(s{l+1}.z_l,0)./s{l+1}.z_l);
 	end
-	gradStack{l}.W = deltaStack{l}*s{l}.a_l'/m;
-	gradStack{l}.b = sum(deltaStack{l},2)/m;
+	gradStack{l}.W = deltaStack{l}*s{l}.a_l';
+	gradStack{l}.b = sum(deltaStack{l},2);
 end
 
 %% compute weight penalty cost and gradient for non-bias terms
 %%% YOUR CODE HERE %%%
-costdecay = 0;
 for l=1:numHidden+1
-	gradStack{l}.W = gradStack{l}.W + (ei.lambda/m) * gradStack{l}.W;
-	costdecay	   =  costdecay +  sum(sum(stack{l}.W.^2));
+	gradStack{l}.W = gradStack{l}.W + ei.lambda * stack{l}.W;
+	cost	   =  cost + (ei.lambda/2)* sum(sum(stack{l}.W.^2));
 end
-cost = cost + costdecay* (ei.lambda/(2*m));
 %% reshape gradients into vector
 [grad] = stack2params(gradStack);
 end
