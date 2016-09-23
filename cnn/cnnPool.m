@@ -33,17 +33,10 @@ pooledFeatures = zeros(convolvedDim / poolDim, ...
 poolFilter = ones(poolDim);
 for i = 1:numFilters
 	for j= 1:numImages
-
-		
 		curConv =  convolvedFeatures(:,:,i,j);
-		size(curConv)
-		size(poolFilter)
 		A = conv2(curConv,poolFilter,'valid');
-		poolDim
-
-		size(A)
 		%%downsampling and averaging
-		pooledFeatures(:,:,i,j) =   A(1:poolDim:end,
+		pooledFeatures(:,:,i,j) =   A(1:poolDim:end,...
 		1:poolDim:end)/poolDim/poolDim;
 	end
 end

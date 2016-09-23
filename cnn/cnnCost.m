@@ -89,7 +89,13 @@ activationsPooled = reshape(activationsPooled,[],numImages);
 % each class.
 probs = zeros(numClasses,numImages);
 
-%%% YOUR CODE HERE %%%
+z = Wd*activationsPooled + repmat(bd,1,numImages); %bsxfun(@plus, Wd * activationsPooled, bd);
+%z =  bsxfun(@minus, z, max(z));
+expZ = exp(z);
+probs = expZ ./ repmat(sum(expZ),size(expZ,1),1);
+%probs = bsxfun(@rdivide, expz, sum(expz));
+
+
 
 %%======================================================================
 %% STEP 1b: Calculate Cost
@@ -100,6 +106,12 @@ probs = zeros(numClasses,numImages);
 cost = 0; % save objective into cost
 
 %%% YOUR CODE HERE %%%
+
+
+y_indic = zeros(numClasses,numImages);
+y_indic(sub2ind(size(y_indic),labels', 1:numImages))=1;
+cost = - sum(sum(y_indic.*log(probs)))/numImages;
+
 
 % Makes predictions given probs and returns without backproagating errors.
 if pred
@@ -118,8 +130,33 @@ end;
 %  error with respect to the pooling layer for each filter and each image.  
 %  Use the kron function and a matrix of ones to do this upsampling 
 %  quickly.
+error_d	= probs - y_indic;
 
-%%% YOUR CODE HERE %%%
+error_p = Wd' * error_d;
+error_p = reshape(error_p, outputDim,outputDim,numFilters,numImages);
+error_c = zeros(convDim,convDim,numFilters,numImages);
+
+Wc_grad_tmp  = zeros(filterDim, filterDim, numFilters, numImages);
+
+%(1/poolDim^2) * kron(error_d,ones(poolDim));
+
+for i = 1: numImages
+	for j = 1: numFilters
+		%upsample the error of the pooling operation using kronecker tensor
+		%product and divide by the size of the pooling region
+		error_c(:,:,j,i) = (1/poolDim^2) * kron(error_p(:,:,j,i),ones(poolDim));
+		%use sigmoid deriv of the activations times the error of the pooling operations
+		%to receive the activation error
+		error_c(:,:,j,i) = error_c(:,:,j,i) .* ...
+		activations(:,:,j,i) .* (1 - activations(:,:,j,i)); 
+		Wc_grad_temp(:,:,j,i) = conv2(images(:,:,i),...
+		rot90(error_c(:,:,j,i),2),'valid');
+	end
+end
+
+
+
+
 
 %%======================================================================
 %% STEP 1d: Gradient Calculation
@@ -130,6 +167,10 @@ end;
 %  for that filter with each image and aggregate over images.
 
 %%% YOUR CODE HERE %%%
+bd_grad = mean(error_d,2);
+Wd_grad = error_d * activationsPooled'/numImages;
+bc_grad = sum(sum(mean(error_c,4)));
+Wc_grad = mean(Wc_grad_temp,4);
 
 %% Unroll gradient into grad vector for minFunc
 grad = [Wc_grad(:) ; Wd_grad(:) ; bc_grad(:) ; bd_grad(:)];

@@ -44,7 +44,7 @@ for imageNum = 1:numImages
     %%% YOUR CODE HERE %%%
 	filter = W(:,:,filterNum);
     % Flip the feature matrix because of the definition of convolution, as explained later
-	filter = rot90(filter,2);
+	filter = rot90(squeeze(filter),2);
     % Obtain the image
     im = squeeze(images(:, :, imageNum));
     % Convolve "filter" with "im", adding the result to convolvedImage
