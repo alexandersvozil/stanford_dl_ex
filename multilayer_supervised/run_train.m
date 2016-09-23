@@ -13,8 +13,8 @@ addpath(genpath('../common/minFunc_2012/minFunc'));
 
 %% load mnist data
 [data_train, labels_train, data_test, labels_test] = load_preprocess_mnist();
-data_train = data_train(:,1:1000);
-labels_train = labels_train(1:1000);
+data_train = data_train(:,1:60000);
+labels_train = labels_train(1:60000);
 
 %% populate ei with the network architecture to train
 % ei is a structure you can use to store hyperparameters of the network
@@ -27,7 +27,7 @@ ei.input_dim = 784;
 % number of output classes
 ei.output_dim = 10;
 % sizes of all hidden layers and the output layer
-ei.layer_sizes = [50 ei.output_dim];
+ei.layer_sizes = [50 50 ei.output_dim];
 % scaling parameter for l2 weight regularization penalty
 ei.lambda = 0.4;
 % which type of activation function to use in hidden layers

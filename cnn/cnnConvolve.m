@@ -38,31 +38,23 @@ convolvedFeatures = zeros(convDim, convDim, numFilters, numImages);
 
 for imageNum = 1:numImages
   for filterNum = 1:numFilters
-
     % convolution of image with feature matrix
     convolvedImage = zeros(convDim, convDim);
-
     % Obtain the feature (filterDim x filterDim) needed during the convolution
-
     %%% YOUR CODE HERE %%%
-
+	filter = W(:,:,filterNum);
     % Flip the feature matrix because of the definition of convolution, as explained later
-    filter = rot90(squeeze(filter),2);
-      
+	filter = rot90(filter,2);
     % Obtain the image
     im = squeeze(images(:, :, imageNum));
-
     % Convolve "filter" with "im", adding the result to convolvedImage
     % be sure to do a 'valid' convolution
-
+	convolvedImage = conv2(im,filter,'valid');
     %%% YOUR CODE HERE %%%
-    
     % Add the bias unit
     % Then, apply the sigmoid function to get the hidden activation
-
+	convolvedImage = sigmoid(convolvedImage + b(filterNum));
     %%% YOUR CODE HERE %%%
-
-    
     convolvedFeatures(:, :, filterNum, imageNum) = convolvedImage;
   end
 end

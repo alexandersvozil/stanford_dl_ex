@@ -51,7 +51,8 @@ end;
 
 %% compute cost
 %squash the labels into a format where we can subtract it from the output layer
-y_indic = eye(size(probK,1))(:,labels);
+y_indic_tmp = eye(size(probK,1));
+y_indic = y_indic_tmp(:,labels);
 cost = - sum(sum(y_indic.*log(probK)))/m;
 
 
