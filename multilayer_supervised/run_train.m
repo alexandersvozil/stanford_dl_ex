@@ -13,8 +13,8 @@ addpath(genpath('../common/minFunc_2012/minFunc'));
 
 %% load mnist data
 [data_train, labels_train, data_test, labels_test] = load_preprocess_mnist();
-data_train = data_train(:,1:5000)
-labels_train = labels_train(1:5000);
+data_train = data_train(:,1:60000);
+labels_train = labels_train(1:60000);
 
 %% populate ei with the network architecture to train
 % ei is a structure you can use to store hyperparameters of the network
